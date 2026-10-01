@@ -1,0 +1,6 @@
+{
+  "name": "KisanConnect - Farmers ka Digital Mandi",
+  "description": "Direct farmer-to-buyer marketplace founded by Hemang Choudhary with real-time order tracking, direct chat, dual review and rating system, multilingual accessibility, and intuitive rural interface.",
+  "requestFramePermissions": [],
+  "majorCapabilities": ["MAJOR_CAPABILITY_SERVER_SIDE_GEMINI_API"]
+}
