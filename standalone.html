@@ -1,0 +1,793 @@
+<!DOCTYPE html>
+<html lang="hi">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>KisanConnect - Farmers ka Digital Mandi (Founder: Hemang Choudhary)</title>
+  <!-- Tailwind CSS CDN for instant standalone execution -->
+  <script src="https://cdn.tailwindcss.com"></script>
+  <!-- Google Fonts -->
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800;900&display=swap" rel="stylesheet">
+  <!-- Font Awesome Icons -->
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+  <style>
+    body { font-family: 'Plus Jakarta Sans', sans-serif; }
+    @keyframes marquee { 0% { transform: translateX(0%); } 100% { transform: translateX(-50%); } }
+    .animate-marquee { display: inline-flex; animation: marquee 30s linear infinite; }
+    .animate-marquee:hover { animation-play-state: paused; }
+    .hide { display: none !important; }
+  </style>
+</head>
+<body class="bg-[#f7faf4] text-slate-800 antialiased selection:bg-emerald-600 selection:text-white">
+
+  <!-- ================= 1. SPLASH SCREEN ================= -->
+  <div id="splashScreen" class="fixed inset-0 z-50 flex flex-col items-center justify-center bg-gradient-to-br from-emerald-950 via-emerald-900 to-green-950 text-white p-6 cursor-pointer select-none">
+    <div class="relative z-10 flex flex-col items-center text-center max-w-md w-full space-y-6">
+      <div class="w-28 h-28 rounded-3xl bg-gradient-to-br from-amber-400 to-emerald-500 flex items-center justify-center text-6xl shadow-2xl border-4 border-emerald-400/40 transform hover:scale-105 transition-transform animate-bounce">
+        🌾
+      </div>
+      <div class="space-y-1.5">
+        <span class="inline-block bg-amber-400/20 text-amber-300 text-xs font-black px-3 py-1 rounded-full uppercase tracking-wider border border-amber-400/30">
+          Founder: Hemang Choudhary
+        </span>
+        <h1 class="text-4xl sm:text-5xl font-black text-white">Kisan<span class="text-amber-400">Connect</span></h1>
+        <p class="text-emerald-200 text-sm font-semibold">Farmers ka Digital Mandi • 0% Commission</p>
+        <p class="text-xs text-emerald-300/80">खेत से सीधे आपके घर, बिना बिचौलियों के ताज़ा उपज!</p>
+      </div>
+      <div class="w-full max-w-xs space-y-2">
+        <div class="flex justify-between text-xs text-emerald-200 font-bold">
+          <span>Loading Mandi...</span>
+          <span id="splashProgressText">0%</span>
+        </div>
+        <div class="h-2.5 w-full bg-emerald-950 rounded-full overflow-hidden p-0.5 border border-emerald-700/60">
+          <div id="splashProgressBar" class="h-full bg-gradient-to-r from-amber-400 to-emerald-400 rounded-full transition-all duration-100" style="width: 0%"></div>
+        </div>
+      </div>
+      <button onclick="skipSplash()" class="text-xs font-bold text-emerald-300 hover:text-amber-300 pt-2">
+        सीधे शुरू करें (Skip Intro) →
+      </button>
+    </div>
+  </div>
+
+  <!-- ================= 2. LOGIN PAGE ================= -->
+  <div id="loginPage" class="min-h-screen bg-gradient-to-br from-emerald-950 via-emerald-900 to-slate-950 flex flex-col justify-center items-center p-4 sm:p-6 hide select-none">
+    <div class="w-full max-w-lg bg-white/95 backdrop-blur-xl rounded-3xl shadow-2xl p-6 sm:p-8 border border-white/80">
+      <div class="text-center space-y-1 mb-6">
+        <span class="inline-block bg-amber-100 text-amber-900 font-extrabold text-[11px] px-3 py-1 rounded-full uppercase tracking-wider">
+          Digital Mandi Login • डिजिटल मंडी
+        </span>
+        <h2 class="text-2xl sm:text-3xl font-black text-slate-900">Welcome to KisanConnect</h2>
+        <p class="text-xs sm:text-sm text-slate-600 font-medium">Founder: Hemang Choudhary • 0% Dalali</p>
+      </div>
+
+      <!-- Role Selection Tabs -->
+      <div class="grid grid-cols-2 gap-3 mb-5">
+        <button id="roleCustomerBtn" onclick="selectRole('customer')" class="p-4 rounded-2xl border-2 border-emerald-600 bg-emerald-50/90 text-center flex flex-col items-center gap-1.5 transition-all">
+          <i class="fa-solid fa-user-check text-2xl text-emerald-600"></i>
+          <span class="font-black text-sm text-slate-900">Buyer (ग्राहक)</span>
+          <span class="text-[10px] text-slate-500 font-medium">Browse & Order Produce</span>
+        </button>
+        <button id="roleSellerBtn" onclick="selectRole('seller')" class="p-4 rounded-2xl border-2 border-slate-200 bg-slate-50 text-center flex flex-col items-center gap-1.5 transition-all">
+          <i class="fa-solid fa-tractor text-2xl text-slate-400"></i>
+          <span class="font-black text-sm text-slate-900">Farmer (किसान)</span>
+          <span class="text-[10px] text-slate-500 font-medium">List Crops & 0% Cut</span>
+        </button>
+      </div>
+
+      <!-- Form -->
+      <div class="space-y-4">
+        <div>
+          <label id="loginLabel" class="block text-xs font-bold text-slate-700 mb-1">नाम या मोबाइल नंबर</label>
+          <input type="text" id="loginInputName" placeholder="उदा. आनंद वर्मा (Bhopal)" class="w-full bg-slate-50 border border-slate-200 rounded-2xl px-4 py-2.5 text-sm focus:outline-none focus:ring-2 focus:ring-emerald-500 font-medium">
+        </div>
+        <div>
+          <label class="block text-xs font-bold text-slate-700 mb-1">पासवर्ड</label>
+          <input type="password" id="loginInputPass" placeholder="••••••••" value="kisan123" class="w-full bg-slate-50 border border-slate-200 rounded-2xl px-4 py-2.5 text-sm focus:outline-none focus:ring-2 focus:ring-emerald-500 font-medium">
+        </div>
+
+        <button onclick="handleLogin()" class="w-full py-3 rounded-2xl font-black text-sm text-white bg-gradient-to-r from-emerald-600 to-green-600 hover:from-emerald-700 hover:to-green-700 shadow-lg cursor-pointer">
+          लॉगिन करें (Enter App) →
+        </button>
+      </div>
+
+      <div class="relative my-4">
+        <div class="absolute inset-0 flex items-center"><div class="w-full border-t border-slate-200"></div></div>
+        <div class="relative flex justify-center text-xs uppercase"><span class="bg-white px-3 text-slate-400 font-bold">या (OR)</span></div>
+      </div>
+
+      <!-- Continue as Guest -->
+      <button onclick="handleGuestLogin()" class="w-full py-3 rounded-2xl bg-slate-100 hover:bg-slate-200 text-emerald-950 font-black text-xs sm:text-sm border-2 border-dashed border-emerald-400 flex items-center justify-center gap-2 cursor-pointer">
+        <span class="text-base">👤</span>
+        <span>बिना लॉगिन अतिथि के रूप में जारी रखें (Continue as Guest)</span>
+      </button>
+
+      <!-- 1-Click Demo -->
+      <div class="mt-4 pt-3 border-t border-slate-100 flex items-center justify-between text-xs text-slate-500">
+        <span class="font-semibold text-[11px]">Quick Demo:</span>
+        <div class="flex items-center gap-2 font-bold text-[11px]">
+          <button onclick="fillDemo('customer')" class="text-emerald-700 hover:underline">Demo Buyer</button>
+          <span>•</span>
+          <button onclick="fillDemo('seller')" class="text-amber-700 hover:underline">Demo Farmer</button>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- ================= 3. MAIN APPLICATION ================= -->
+  <div id="mainApp" class="hide min-h-screen flex flex-col">
+    
+    <!-- Top Mandi Ticker -->
+    <div class="bg-emerald-900 text-white text-xs py-2 px-4 overflow-hidden border-b border-emerald-800">
+      <div class="max-w-7xl mx-auto flex items-center gap-3">
+        <span class="bg-emerald-950 font-bold text-amber-300 px-2.5 py-0.5 rounded-full border border-amber-400/30 shrink-0">
+          <i class="fa-solid fa-store mr-1"></i> लाइव मंडी भाव (Today APMC):
+        </span>
+        <div class="overflow-hidden whitespace-nowrap w-full">
+          <div class="animate-marquee gap-6 font-semibold">
+            <span class="bg-emerald-800/80 px-2.5 py-1 rounded">🌾 शरबती गेहूं (Sehore APMC): ₹3,820/q <span class="text-emerald-300 font-black">+4.2% ↑</span></span>
+            <span class="bg-emerald-800/80 px-2.5 py-1 rounded">🍚 बासमती धान (Khanna Mandi): ₹4,650/q <span class="text-emerald-300 font-black">+2.8% ↑</span></span>
+            <span class="bg-emerald-800/80 px-2.5 py-1 rounded">🌱 सरसों (Alwar Mandi): ₹5,480/q <span class="text-emerald-300 font-black">+1.5% ↑</span></span>
+            <span class="bg-emerald-800/80 px-2.5 py-1 rounded">🧅 लाल प्याज (Lasalgaon): ₹1,950/q <span class="text-rose-300 font-black">-1.2% ↓</span></span>
+            <span class="bg-emerald-800/80 px-2.5 py-1 rounded">🍅 देशी टमाटर (Kolar Mandi): ₹2,200/q <span class="text-emerald-300 font-black">+6.4% ↑</span></span>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Header Navigation -->
+    <header class="sticky top-0 z-40 bg-white/95 backdrop-blur-md border-b border-emerald-100 shadow-xs">
+      <div class="bg-gradient-to-r from-emerald-800 to-green-800 text-white py-1 px-4 text-xs font-medium flex justify-between items-center">
+        <span><i class="fa-solid fa-award text-amber-300 mr-1"></i> <b>संस्थापक: हेमांग चौधरी (Founder: Hemang Choudhary)</b> | 0% दलाली • 100% किसानों को सीधा भुगतान</span>
+        <span class="font-mono hidden sm:inline">हेल्पलाइन: 1800-KISAN-00</span>
+      </div>
+
+      <div class="max-w-7xl mx-auto px-4 py-3 flex items-center justify-between gap-4">
+        <!-- Logo -->
+        <div class="flex items-center gap-2 cursor-pointer" onclick="window.scrollTo({top:0, behavior:'smooth'})">
+          <div class="w-10 h-10 rounded-2xl bg-gradient-to-br from-emerald-600 to-green-500 flex items-center justify-center text-white text-xl shadow-md">
+            🌾
+          </div>
+          <div>
+            <div class="flex items-center gap-1.5 font-black text-xl text-emerald-950">
+              KisanConnect
+              <span id="windowIndicator" class="text-[10px] font-bold px-2 py-0.5 rounded-full bg-emerald-100 text-emerald-800 uppercase">
+                Buyer Window
+              </span>
+            </div>
+            <p class="text-[11px] text-slate-500 font-medium">Farmers ka Digital Mandi</p>
+          </div>
+        </div>
+
+        <!-- Role Toggle & Actions -->
+        <div class="flex items-center gap-3">
+          <div class="bg-slate-100 p-1 rounded-xl flex items-center border border-slate-200 text-xs font-bold">
+            <button id="toggleBuyerBtn" onclick="switchWindow('customer')" class="px-3 py-1 rounded-lg bg-white text-emerald-800 shadow-xs">
+              <i class="fa-solid fa-user mr-1"></i> Buyer Window
+            </button>
+            <button id="toggleSellerBtn" onclick="switchWindow('seller')" class="px-3 py-1 rounded-lg text-slate-600 hover:text-slate-900">
+              <i class="fa-solid fa-tractor mr-1"></i> Farmer Window
+            </button>
+          </div>
+
+          <!-- Order Tracking -->
+          <button onclick="openTrackingModal()" class="p-2 sm:px-3 sm:py-1.5 rounded-xl border border-emerald-200 bg-emerald-50 text-emerald-800 text-xs font-bold flex items-center gap-1.5 hover:bg-emerald-100 cursor-pointer">
+            <i class="fa-solid fa-truck text-emerald-700"></i>
+            <span class="hidden sm:inline">Track Order</span>
+          </button>
+
+          <!-- Cart (Buyer only) -->
+          <button id="headerCartBtn" onclick="openCartDrawer()" class="p-2 sm:px-3 sm:py-1.5 rounded-xl bg-gradient-to-r from-emerald-600 to-green-600 text-white text-xs font-black flex items-center gap-1.5 shadow-md cursor-pointer">
+            <i class="fa-solid fa-cart-shopping"></i>
+            <span class="hidden sm:inline">Cart</span>
+            <span id="cartCountBadge" class="bg-rose-500 text-white text-[10px] px-1.5 py-0.2 rounded-full font-black">0</span>
+          </button>
+
+          <!-- User & Logout -->
+          <div class="flex items-center gap-2 pl-2 border-l border-slate-200">
+            <span id="currentUserNameText" class="text-xs font-bold text-slate-800 hidden md:inline">Guest</span>
+            <button onclick="handleLogout()" class="p-2 rounded-xl bg-slate-100 hover:bg-rose-50 text-slate-600 hover:text-rose-600 transition-colors" title="Logout">
+              <i class="fa-solid fa-right-from-bracket"></i>
+            </button>
+          </div>
+        </div>
+      </div>
+    </header>
+
+    <!-- ================= BUYER WINDOW ================= -->
+    <div id="buyerWindow" class="space-y-12">
+      <!-- Hero -->
+      <section class="bg-gradient-to-b from-emerald-900 to-emerald-950 text-white py-14 px-4 sm:px-6">
+        <div class="max-w-7xl mx-auto grid grid-cols-1 lg:grid-cols-12 gap-8 items-center">
+          <div class="lg:col-span-7 space-y-4">
+            <span class="inline-block bg-amber-400 text-emerald-950 text-xs font-black px-3.5 py-1 rounded-full uppercase tracking-wider">
+              ⭐ संस्थापक: हेमांग चौधरी का संकल्प
+            </span>
+            <h1 class="text-3xl sm:text-5xl font-black leading-tight">
+              खेत से सीधे आपके घर, <span class="text-amber-300 underline decoration-emerald-400">बिना बिचौलियों के</span> ताज़ा फसल!
+            </h1>
+            <p class="text-emerald-100 text-sm sm:text-base leading-relaxed">
+              हेमांग चौधरी द्वारा स्थापित किसानकनेक्ट देश भर के किसानों को उचित मूल्य और ग्राहकों को 100% ताज़ा और शुद्ध कृषि उत्पाद सीधे उपलब्ध कराता है।
+            </p>
+            <div class="flex flex-wrap gap-3 pt-2">
+              <a href="#marketplace" class="px-6 py-3 rounded-2xl bg-amber-400 hover:bg-amber-300 text-emerald-950 font-black text-sm shadow-lg">
+                ताज़ा उत्पाद देखें (Browse Mandi) →
+              </a>
+              <button onclick="openChatModal(1)" class="px-5 py-3 rounded-2xl bg-emerald-800 hover:bg-emerald-700 text-white font-bold text-sm border border-emerald-600 flex items-center gap-2">
+                <i class="fa-solid fa-comments text-amber-300"></i> किसान से सीधी चैट करें
+              </button>
+            </div>
+          </div>
+          <div class="lg:col-span-5 bg-emerald-800/80 border border-emerald-600/50 rounded-3xl p-6 backdrop-blur-md space-y-3">
+            <h3 class="font-black text-base text-white flex items-center gap-2">
+              <span class="w-8 h-8 rounded-xl bg-amber-400 text-emerald-950 font-black flex items-center justify-center">HC</span>
+              हेमांग चौधरी (Founder's Vision)
+            </h3>
+            <p class="text-xs text-emerald-100 italic leading-relaxed">
+              "हमारा मुख्य ध्येय बिचौलियों (आढ़तियों) के शोषण को समाप्त कर किसानों को उनकी उपज का शत-प्रतिशत दाम दिलाना और परिवारों को रसायन-मुक्त ताज़ा पोषण पहुंचाना है।"
+            </p>
+            <div class="pt-2 border-t border-emerald-700 text-xs flex justify-between font-bold text-emerald-200">
+              <span>0% दलाली (Zero Commission)</span>
+              <span>24 घंटे में बैंक ट्रांसफर</span>
+            </div>
+          </div>
+        </div>
+      </section>
+
+      <!-- Marketplace -->
+      <section id="marketplace" class="max-w-7xl mx-auto px-4 sm:px-6 space-y-6">
+        <div class="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4">
+          <div>
+            <h2 class="text-2xl sm:text-3xl font-black text-slate-900">Today's Fresh Harvest • आज की ताज़ा मंडी</h2>
+            <p class="text-xs text-slate-500 font-medium">Direct farm gate prices set by farmers themselves</p>
+          </div>
+          <input type="text" id="buyerSearchInput" oninput="filterProducts()" placeholder="फसल, फल, सब्जी या किसान खोजें..." class="w-full sm:w-80 bg-white border border-slate-200 rounded-2xl px-4 py-2.5 text-xs sm:text-sm focus:ring-2 focus:ring-emerald-500 font-medium shadow-2xs">
+        </div>
+
+        <!-- Products Grid -->
+        <div id="productsGrid" class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6">
+          <!-- Populated by JS -->
+        </div>
+      </section>
+
+      <!-- Reviews Section -->
+      <section class="max-w-7xl mx-auto px-4 sm:px-6 py-8 border-t border-slate-200 space-y-6">
+        <div class="flex justify-between items-center">
+          <div>
+            <h2 class="text-2xl font-black text-slate-900">Customer & Farmer Reviews • निष्पक्ष समीक्षाएं</h2>
+            <p class="text-xs text-slate-500 font-medium">दोतरफा रेटिंग प्रणाली - पारदर्शिता और विश्वास</p>
+          </div>
+          <button onclick="alert('Review submission recorded!')" class="px-4 py-2 bg-emerald-600 hover:bg-emerald-700 text-white rounded-xl text-xs font-black">
+            + अपनी समीक्षा लिखें
+          </button>
+        </div>
+        <div class="grid grid-cols-1 md:grid-cols-3 gap-4">
+          <div class="p-5 bg-white rounded-3xl border border-slate-200 shadow-2xs space-y-2">
+            <div class="flex justify-between items-center text-amber-500 text-sm">★★★★★ <span class="text-xs text-slate-400 font-semibold">कल</span></div>
+            <p class="text-xs text-slate-700 italic">"सीहोर के शरबती गेहूं की रोटियां बहुत ही मीठी और मुलायम बनीं। किसान को सीधा पूरा पैसा गया, यही सबसे अच्छी बात है।"</p>
+            <div class="font-bold text-xs text-slate-900">— अनन्य देशपांडे (पुणे)</div>
+          </div>
+          <div class="p-5 bg-white rounded-3xl border border-slate-200 shadow-2xs space-y-2">
+            <div class="flex justify-between items-center text-amber-500 text-sm">★★★★★ <span class="text-xs text-slate-400 font-semibold">2 दिन पहले</span></div>
+            <p class="text-xs text-slate-700 italic">"पारंपरिक बिलोना घी का स्वाद एकदम शुद्ध गांव जैसा है। किसान से लाइव चैट करके आश्वस्त होने का फीचर लाजवाब है!"</p>
+            <div class="font-bold text-xs text-slate-900">— डॉ. विवेक स्वामीनाथन (बेंगलुरु)</div>
+          </div>
+          <div class="p-5 bg-white rounded-3xl border border-slate-200 shadow-2xs space-y-2">
+            <div class="flex justify-between items-center text-amber-500 text-sm">★★★★★ <span class="text-xs text-slate-400 font-semibold">किसान समीक्षा</span></div>
+            <p class="text-xs text-slate-700 italic">"मंडी के आढ़तिए 30% काट लेते थे। हेमांग चौधरी जी के किसानकनेक्ट पर हर क्विंटल का पूरा 100% भाव सीधे मेरे बैंक में आ गया।"</p>
+            <div class="font-bold text-xs text-emerald-800">— सरदार गुरप्रीत सिंह (किसान, सीहोर)</div>
+          </div>
+        </div>
+      </section>
+
+      <!-- FAQ Section -->
+      <section class="max-w-4xl mx-auto px-4 sm:px-6 py-6 border-t border-slate-200 space-y-4">
+        <h2 class="text-2xl font-black text-slate-900 text-center">Frequently Asked Questions (FAQ)</h2>
+        <div class="space-y-3">
+          <div class="p-4 bg-white rounded-2xl border border-slate-200">
+            <h4 class="font-bold text-sm text-slate-900">Q: किसानकनेक्ट किसानों से कितना कमीशन लेता है?</h4>
+            <p class="text-xs text-slate-600 mt-1">A: किसानकनेक्ट किसानों से 0% कमीशन (शून्य दलाली) लेता है! संस्थापक हेमांग चौधरी के संकल्प अनुसार 100% पैसा 24 घंटे में किसान के बैंक खाते में जाता है।</p>
+          </div>
+          <div class="p-4 bg-white rounded-2xl border border-slate-200">
+            <h4 class="font-bold text-sm text-slate-900">Q: क्या किसान से सीधे चैट और भाव पर बात कर सकते हैं?</h4>
+            <p class="text-xs text-slate-600 mt-1">A: हाँ! हर फसल कार्ड पर 'किसान से चैट' बटन है, जहाँ आप वॉयस नोट सुन सकते हैं और अपना भाव प्रस्तावित (Bargain Offer) कर सकते हैं।</p>
+          </div>
+          <div class="p-4 bg-white rounded-2xl border border-slate-200">
+            <h4 class="font-bold text-sm text-slate-900">Q: डिलीवरी कैसे होती है?</h4>
+            <p class="text-xs text-slate-600 mt-1">A: खेत से सुबह ताज़ी तुलाई के बाद कोल्ड-चेन वाहन से सीधे आपके घर तक पहुंचाई जाती है। आप 5 चरणों में लाइव ट्रैकिंग देख सकते हैं।</p>
+          </div>
+        </div>
+      </section>
+    </div>
+
+    <!-- ================= SELLER / FARMER WINDOW ================= -->
+    <div id="sellerWindow" class="hide space-y-8 p-4 sm:p-6 max-w-7xl mx-auto w-full">
+      <!-- Welcome Banner -->
+      <div class="bg-gradient-to-r from-emerald-900 via-green-950 to-emerald-950 text-white rounded-3xl p-6 sm:p-8 shadow-xl flex flex-col md:flex-row justify-between items-start md:items-center gap-6">
+        <div class="space-y-2">
+          <span class="bg-amber-400 text-emerald-950 font-black text-xs px-3 py-1 rounded-full uppercase">
+            🌾 किसान पोर्टल (Farmer Portal)
+          </span>
+          <h1 class="text-3xl font-black">राम राम, किसान भाई!</h1>
+          <p class="text-xs sm:text-sm text-emerald-200">
+            यहाँ आपकी फसल का 100% भाव सीधे आपके बैंक खाते में जमा होता है। 0% दलाली, सीधी बिक्री।
+          </p>
+        </div>
+        <button onclick="openAddCropModal()" class="px-5 py-3 rounded-2xl bg-amber-400 hover:bg-amber-300 text-emerald-950 font-black text-sm shadow-md flex items-center gap-2 cursor-pointer">
+          <i class="fa-solid fa-plus"></i> नई फसल लिस्ट करें (Add Crop)
+        </button>
+      </div>
+
+      <!-- 4 Touch Metric Cards -->
+      <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
+        <div class="p-5 bg-white rounded-3xl border border-slate-200 shadow-2xs space-y-1">
+          <span class="text-xs font-bold text-slate-500 uppercase">कुल बैंक भुगतान (Payout)</span>
+          <div class="text-3xl font-black text-emerald-950">₹52,000</div>
+          <span class="text-[11px] text-emerald-600 font-bold">100% खाते में जमा (0% कट)</span>
+        </div>
+        <div class="p-5 bg-white rounded-3xl border border-slate-200 shadow-2xs space-y-1">
+          <span class="text-xs font-bold text-slate-500 uppercase">सक्रिय फसलें (Active Crops)</span>
+          <div class="text-3xl font-black text-slate-900">4 फसलें</div>
+          <span class="text-[11px] text-slate-500 font-medium">Digital Mandi में लाइव</span>
+        </div>
+        <div class="p-5 bg-white rounded-3xl border border-slate-200 shadow-2xs space-y-1">
+          <span class="text-xs font-bold text-slate-500 uppercase">ऑर्डर पैकिंग बाकी (Pending)</span>
+          <div class="text-3xl font-black text-slate-900">2 Orders</div>
+          <span class="text-[11px] text-blue-600 font-bold">आज पिकअप वाहन पहुंचेगा</span>
+        </div>
+        <div class="p-5 bg-white rounded-3xl border border-slate-200 shadow-2xs space-y-1">
+          <span class="text-xs font-bold text-slate-500 uppercase">किसान रेटिंग (Rating)</span>
+          <div class="text-3xl font-black text-slate-900 flex items-center gap-1.5">
+            4.9 <span class="text-amber-500 text-sm">★★★★★</span>
+          </div>
+          <span class="text-[11px] text-emerald-700 font-bold">सत्यापित अन्नदाता</span>
+        </div>
+      </div>
+
+      <!-- Listed Crops Table -->
+      <div class="p-6 bg-white rounded-3xl border border-slate-200 shadow-2xs space-y-4">
+        <div class="flex justify-between items-center">
+          <h3 class="font-black text-lg text-slate-900">आपकी लिस्टेड फसलें (My Listings)</h3>
+          <button onclick="openAddCropModal()" class="text-xs font-bold text-emerald-700 underline">+ Add More</button>
+        </div>
+        <div class="grid grid-cols-1 sm:grid-cols-3 gap-4" id="farmerListingsGrid">
+          <!-- Populated by JS -->
+        </div>
+      </div>
+    </div>
+
+    <!-- Footer -->
+    <footer class="mt-auto bg-emerald-950 text-emerald-200 py-10 px-4 sm:px-6 border-t border-emerald-900">
+      <div class="max-w-7xl mx-auto flex flex-col sm:flex-row justify-between items-center gap-4 text-xs font-medium">
+        <div>
+          <b>KisanConnect</b> • Founded by <b>Hemang Choudhary</b>. Dedicated to Indian Farmers & Families.
+        </div>
+        <div class="text-amber-300 font-bold">
+          🌾 शुद्ध अन्न, समृद्ध किसान • 0% Commission
+        </div>
+      </div>
+    </footer>
+  </div>
+
+  <!-- ================= 4. MODALS (DIRECT CHAT, TRACKING, CART) ================= -->
+
+  <!-- Direct Chat Modal -->
+  <div id="chatModal" class="fixed inset-0 z-50 flex items-center justify-center p-4 bg-slate-950/70 backdrop-blur-xs hide">
+    <div class="bg-white w-full max-w-lg rounded-3xl shadow-2xl overflow-hidden flex flex-col h-[650px] border border-slate-200">
+      <div class="bg-emerald-800 text-white p-4 flex justify-between items-center">
+        <div class="flex items-center gap-3">
+          <span class="text-2xl" id="chatCropEmoji">🌾</span>
+          <div>
+            <h4 class="font-extrabold text-sm" id="chatFarmerName">सरदार गुरप्रीत सिंह (किसान)</h4>
+            <p class="text-[11px] text-emerald-200">सीहोर, मध्य प्रदेश • Online Now</p>
+          </div>
+        </div>
+        <button onclick="closeChatModal()" class="text-emerald-200 hover:text-white text-xl font-black">✕</button>
+      </div>
+
+      <!-- Messages Thread -->
+      <div id="chatThread" class="flex-1 p-4 overflow-y-auto space-y-3 bg-slate-50 text-xs">
+        <div class="p-3 bg-white rounded-2xl border border-slate-200 max-w-[85%] text-slate-800">
+          <b>किसान:</b> राम राम जी! मेरी यह शरबती गेहूं की फसल एकदम ताज़ी कटी हुई है और बिना किसी पॉलिश के है। आपको कितनी मात्रा चाहिए?
+        </div>
+        <div class="p-3 bg-emerald-100 text-emerald-950 rounded-2xl max-w-[85%] ml-auto">
+          वॉयस संदेश: 🔊 "भाई जी, सीहोर की काली मिट्टी का गेहूं है, रोटी बहुत मीठी बनेगी।" (0:18)
+        </div>
+      </div>
+
+      <!-- Quick prompts -->
+      <div class="p-2 bg-white border-t border-slate-100 flex gap-1.5 overflow-x-auto text-[11px] font-semibold">
+        <button onclick="sendChatMessage('क्या यह आज सुबह का ताज़ा माल है?')" class="px-2.5 py-1 bg-slate-100 hover:bg-emerald-50 rounded-xl whitespace-nowrap">ताज़ा माल है?</button>
+        <button onclick="sendChatMessage('थोक में लेने पर क्या डिस्काउंट मिलेगा?')" class="px-2.5 py-1 bg-slate-100 hover:bg-emerald-50 rounded-xl whitespace-nowrap">थोक भाव?</button>
+        <button onclick="sendChatMessage('डिलीवरी कब तक पहुंच जाएगी?')" class="px-2.5 py-1 bg-slate-100 hover:bg-emerald-50 rounded-xl whitespace-nowrap">डिलीवरी समय?</button>
+      </div>
+
+      <!-- Input -->
+      <div class="p-3 bg-white border-t border-slate-200 flex gap-2">
+        <input type="text" id="chatInput" placeholder="अपना संदेश या भाव का प्रस्ताव लिखें..." class="flex-1 bg-slate-100 rounded-2xl px-4 py-2 text-xs focus:outline-none focus:ring-2 focus:ring-emerald-500 font-medium">
+        <button onclick="sendChatMessage()" class="px-4 py-2 bg-emerald-600 hover:bg-emerald-700 text-white rounded-2xl text-xs font-bold">भेजें</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- Order Tracking Modal -->
+  <div id="trackingModal" class="fixed inset-0 z-50 flex items-center justify-center p-4 bg-slate-950/70 backdrop-blur-xs hide">
+    <div class="bg-white w-full max-w-xl rounded-3xl shadow-2xl p-6 border border-slate-200 space-y-5">
+      <div class="flex justify-between items-center border-b border-slate-100 pb-3">
+        <div class="flex items-center gap-2 font-black text-lg text-slate-900">
+          <i class="fa-solid fa-truck text-emerald-600"></i>
+          <span>Live Order Tracking (ऑर्डर ट्रैकिंग)</span>
+        </div>
+        <button onclick="closeTrackingModal()" class="text-slate-400 hover:text-slate-700 text-lg font-bold">✕</button>
+      </div>
+
+      <div class="p-4 bg-emerald-50 rounded-2xl border border-emerald-200 flex justify-between items-center">
+        <div>
+          <span class="text-xs font-black text-slate-900">ऑर्डर #KC-92841</span>
+          <p class="text-xs text-emerald-900 font-bold">एमपी शरबती गेहूं (50 किग्रा)</p>
+          <p class="text-[11px] text-slate-500">किसान: सरदार गुरप्रीत सिंह (सीहोर)</p>
+        </div>
+        <div class="text-center bg-white p-2.5 rounded-xl border border-amber-300">
+          <span class="text-[10px] font-bold text-slate-400 uppercase block">Delivery OTP</span>
+          <span class="font-mono text-lg font-black text-emerald-950">4829</span>
+        </div>
+      </div>
+
+      <!-- 5-Stage Visual Progress -->
+      <div class="space-y-3 text-xs pl-4 border-l-2 border-emerald-500">
+        <div class="flex items-center gap-2 text-emerald-800 font-bold">
+          <span class="w-3 h-3 rounded-full bg-emerald-600"></span> 1. ऑर्डर स्वीकार हुआ (Order Placed) - 06:15 AM
+        </div>
+        <div class="flex items-center gap-2 text-emerald-800 font-bold">
+          <span class="w-3 h-3 rounded-full bg-emerald-600"></span> 2. खेत से ताजा तोड़ा व पैक किया (Harvested & Farm-Packed) - 07:30 AM
+        </div>
+        <div class="flex items-center gap-2 text-emerald-800 font-bold">
+          <span class="w-3 h-3 rounded-full bg-emerald-600"></span> 3. गुणवत्ता जांच व पिकअप (Quality Checked) - 09:45 AM
+        </div>
+        <div class="flex items-center gap-2 text-emerald-950 font-black animate-pulse">
+          <span class="w-3 h-3 rounded-full bg-amber-500"></span> 4. डिलीवरी के लिए रवाना (Out for Delivery via Tata Cold Van)
+        </div>
+        <div class="flex items-center gap-2 text-slate-400 font-medium">
+          <span class="w-3 h-3 rounded-full bg-slate-300"></span> 5. घर पर डिलीवरी व ओटीपी सत्यापन (Delivered)
+        </div>
+      </div>
+
+      <div class="p-3 bg-slate-900 text-white rounded-2xl text-xs flex justify-between items-center">
+        <span>चालक: रामेश्वर गुर्जर (Tata Ace MP-04-GA-4821)</span>
+        <a href="tel:+919829012845" class="px-3 py-1 bg-emerald-600 rounded-lg font-bold text-[11px]">कॉल करें</a>
+      </div>
+    </div>
+  </div>
+
+  <!-- Cart Drawer -->
+  <div id="cartDrawer" class="fixed inset-0 z-50 flex justify-end bg-slate-950/60 backdrop-blur-xs hide">
+    <div class="w-full max-w-md bg-white h-full shadow-2xl p-6 flex flex-col justify-between">
+      <div class="space-y-4">
+        <div class="flex justify-between items-center border-b border-slate-100 pb-3">
+          <h3 class="font-black text-lg text-slate-900">Your Fresh Cart (टोकरी)</h3>
+          <button onclick="closeCartDrawer()" class="text-slate-400 hover:text-slate-700 text-lg font-bold">✕</button>
+        </div>
+        <div id="cartItemsList" class="space-y-3 text-xs">
+          <!-- Injected by JS -->
+        </div>
+      </div>
+
+      <div class="border-t border-slate-200 pt-4 space-y-3">
+        <div class="flex justify-between font-black text-base text-slate-900">
+          <span>कुल राशि (Total):</span>
+          <span id="cartTotalText">₹0</span>
+        </div>
+        <button onclick="checkoutCart()" class="w-full py-3.5 bg-gradient-to-r from-emerald-600 to-green-600 hover:from-emerald-700 text-white font-black rounded-2xl text-sm shadow-md cursor-pointer">
+          ऑर्डर पूरा करें (Place Order to Farm) →
+        </button>
+      </div>
+    </div>
+  </div>
+
+  <!-- Add Crop Modal (Farmer) -->
+  <div id="addCropModal" class="fixed inset-0 z-50 flex items-center justify-center p-4 bg-slate-950/70 backdrop-blur-xs hide">
+    <div class="bg-white w-full max-w-md rounded-3xl shadow-2xl p-6 border border-slate-200 space-y-4">
+      <div class="flex justify-between items-center border-b border-slate-100 pb-3">
+        <h3 class="font-black text-base text-slate-900">+ नई फसल लिस्ट करें (0% कमीशन)</h3>
+        <button onclick="closeAddCropModal()" class="text-slate-400 hover:text-slate-700 font-bold">✕</button>
+      </div>
+      <div class="space-y-3 text-xs">
+        <div>
+          <label class="block font-bold text-slate-700 mb-1">फसल का नाम *</label>
+          <input type="text" id="newCropName" placeholder="उदा. बासमती धान, लाल प्याज..." class="w-full bg-slate-50 border border-slate-200 rounded-xl p-2.5">
+        </div>
+        <div class="grid grid-cols-2 gap-2">
+          <div>
+            <label class="block font-bold text-slate-700 mb-1">दाम (₹) *</label>
+            <input type="number" id="newCropPrice" placeholder="उदा. 2400" class="w-full bg-slate-50 border border-slate-200 rounded-xl p-2.5">
+          </div>
+          <div>
+            <label class="block font-bold text-slate-700 mb-1">इकाई</label>
+            <select id="newCropUnit" class="w-full bg-slate-50 border border-slate-200 rounded-xl p-2.5">
+              <option value="per quintal">प्रति क्विंटल</option>
+              <option value="per kg">प्रति किलो</option>
+              <option value="per liter">प्रति लीटर</option>
+            </select>
+          </div>
+        </div>
+        <button onclick="saveNewCrop()" class="w-full py-2.5 bg-emerald-600 hover:bg-emerald-700 text-white rounded-xl font-black text-xs mt-2">
+          फसल मंडी में प्रकाशित करें
+        </button>
+      </div>
+    </div>
+  </div>
+
+  <!-- JAVASCRIPT APPLICATION LOGIC -->
+  <script>
+    // Mock Data
+    const productsData = [
+      { id: 1, name: 'MP Sharbati Wheat (शरबती गेहूं)', desc: 'सीहोर की काली मिट्टी का बिना पॉलिश का शुद्ध गेहूं', price: 3800, unit: 'per quintal', emoji: '🌾', farmer: 'सरदार गुरप्रीत सिंह', location: 'सीहोर, MP', tag: 'Bestseller' },
+      { id: 2, name: 'Desi Organic Tomatoes (देशी टमाटर)', desc: 'सुबह 5 बजे खेत से तोड़े गए लाल रसदार टमाटर', price: 35, unit: 'per kg', emoji: '🍅', farmer: 'सुनीता देवी', location: 'नासिक, महाराष्ट्र', tag: 'Farm Fresh' },
+      { id: 3, name: 'A2 Gir Cow Desi Ghee (गीर गाय का घी)', desc: 'पारंपरिक लकड़ी के बिलोना से तैयार शुद्ध सुगंधित घी', price: 1450, unit: 'per liter', emoji: '🧈', farmer: 'चौधरी रामेश्वर', location: 'पाली, राजस्थान', tag: 'Pure A2' },
+      { id: 4, name: 'Kashmiri Royal Apples (कश्मीरी सेब)', desc: 'शोपिंयां के बगीचे से सीधे मीठे व कुरकुरे सेब', price: 160, unit: 'per kg', emoji: '🍎', farmer: 'बशीर अहमद मीर', location: 'शोपिंयां, कश्मीर', tag: 'Orchard Fresh' }
+    ];
+
+    let cart = [];
+    let currentRole = 'customer';
+    let currentUser = 'Guest';
+
+    // 1. Splash Screen Timer
+    let splashProgress = 0;
+    const splashInterval = setInterval(() => {
+      splashProgress += 10;
+      document.getElementById('splashProgressText').innerText = splashProgress + '%';
+      document.getElementById('splashProgressBar').style.width = splashProgress + '%';
+      if (splashProgress >= 100) {
+        clearInterval(splashInterval);
+        setTimeout(skipSplash, 250);
+      }
+    }, 60);
+
+    function skipSplash() {
+      clearInterval(splashInterval);
+      document.getElementById('splashScreen').classList.add('hide');
+      document.getElementById('loginPage').classList.remove('hide');
+    }
+
+    // 2. Login Page Logic
+    function selectRole(role) {
+      currentRole = role;
+      if (role === 'customer') {
+        document.getElementById('roleCustomerBtn').className = 'p-4 rounded-2xl border-2 border-emerald-600 bg-emerald-50/90 text-center flex flex-col items-center gap-1.5 transition-all';
+        document.getElementById('roleSellerBtn').className = 'p-4 rounded-2xl border-2 border-slate-200 bg-slate-50 text-center flex flex-col items-center gap-1.5 transition-all';
+        document.getElementById('loginLabel').innerText = 'नाम या मोबाइल नंबर';
+      } else {
+        document.getElementById('roleSellerBtn').className = 'p-4 rounded-2xl border-2 border-amber-500 bg-amber-50/90 text-center flex flex-col items-center gap-1.5 transition-all';
+        document.getElementById('roleCustomerBtn').className = 'p-4 rounded-2xl border-2 border-slate-200 bg-slate-50 text-center flex flex-col items-center gap-1.5 transition-all';
+        document.getElementById('loginLabel').innerText = 'किसान / खेत का नाम या मोबाइल';
+      }
+    }
+
+    function fillDemo(role) {
+      selectRole(role);
+      if (role === 'customer') {
+        document.getElementById('loginInputName').value = 'आनंद वर्मा (Buyer)';
+      } else {
+        document.getElementById('loginInputName').value = 'सरदार गुरप्रीत सिंह (Farmer)';
+      }
+    }
+
+    function handleLogin() {
+      const name = document.getElementById('loginInputName').value.trim() || (currentRole === 'customer' ? 'Buyer User' : 'Farmer User');
+      currentUser = name;
+      enterMainApp();
+    }
+
+    function handleGuestLogin() {
+      currentUser = currentRole === 'customer' ? 'Guest Buyer' : 'Guest Farmer';
+      enterMainApp();
+    }
+
+    function enterMainApp() {
+      document.getElementById('loginPage').classList.add('hide');
+      document.getElementById('mainApp').classList.remove('hide');
+      document.getElementById('currentUserNameText').innerText = currentUser;
+      switchWindow(currentRole);
+      renderProducts();
+      renderFarmerListings();
+    }
+
+    function handleLogout() {
+      document.getElementById('mainApp').classList.add('hide');
+      document.getElementById('loginPage').classList.remove('hide');
+    }
+
+    // 3. Switch between Buyer & Seller Windows
+    function switchWindow(role) {
+      currentRole = role;
+      if (role === 'customer') {
+        document.getElementById('buyerWindow').classList.remove('hide');
+        document.getElementById('sellerWindow').classList.add('hide');
+        document.getElementById('headerCartBtn').classList.remove('hide');
+        document.getElementById('windowIndicator').innerText = 'Buyer Window';
+        document.getElementById('windowIndicator').className = 'text-[10px] font-bold px-2 py-0.5 rounded-full bg-emerald-100 text-emerald-800 uppercase';
+        document.getElementById('toggleBuyerBtn').className = 'px-3 py-1 rounded-lg bg-white text-emerald-800 shadow-xs';
+        document.getElementById('toggleSellerBtn').className = 'px-3 py-1 rounded-lg text-slate-600 hover:text-slate-900';
+      } else {
+        document.getElementById('sellerWindow').classList.remove('hide');
+        document.getElementById('buyerWindow').classList.add('hide');
+        document.getElementById('headerCartBtn').classList.add('hide');
+        document.getElementById('windowIndicator').innerText = 'Farmer Window';
+        document.getElementById('windowIndicator').className = 'text-[10px] font-bold px-2 py-0.5 rounded-full bg-amber-100 text-amber-900 uppercase border border-amber-300';
+        document.getElementById('toggleSellerBtn').className = 'px-3 py-1 rounded-lg bg-emerald-600 text-white shadow-xs';
+        document.getElementById('toggleBuyerBtn').className = 'px-3 py-1 rounded-lg text-slate-600 hover:text-slate-900';
+      }
+    }
+
+    // 4. Render Marketplace Products
+    function renderProducts(filter = '') {
+      const container = document.getElementById('productsGrid');
+      const filtered = productsData.filter(p => !filter || p.name.toLowerCase().includes(filter.toLowerCase()) || p.farmer.includes(filter));
+      container.innerHTML = filtered.map(p => `
+        <div class="bg-white rounded-3xl p-4 border border-slate-200 shadow-2xs hover:shadow-lg transition-all flex flex-col justify-between">
+          <div>
+            <div class="w-full h-36 bg-emerald-50 rounded-2xl flex items-center justify-center text-6xl mb-3 relative">
+              ${p.emoji}
+              <span class="absolute top-2 right-2 text-[10px] font-black bg-emerald-700 text-white px-2 py-0.5 rounded-full">${p.tag}</span>
+            </div>
+            <div class="text-[11px] text-emerald-800 font-bold mb-1">
+              <i class="fa-solid fa-circle-check"></i> ${p.farmer} (${p.location})
+            </div>
+            <h4 class="font-extrabold text-sm text-slate-900 leading-snug">${p.name}</h4>
+            <p class="text-xs text-slate-500 mt-1">${p.desc}</p>
+          </div>
+          <div class="mt-4 pt-3 border-t border-slate-100 flex items-center justify-between">
+            <div>
+              <span class="text-lg font-black text-emerald-950">₹${p.price}</span>
+              <span class="text-[11px] text-slate-400 font-bold">/${p.unit.replace('per ', '')}</span>
+            </div>
+            <div class="flex gap-1.5">
+              <button onclick="openChatModal(${p.id})" class="px-2.5 py-1.5 bg-emerald-50 hover:bg-emerald-100 text-emerald-800 rounded-xl text-xs font-bold" title="Chat with Farmer">
+                <i class="fa-solid fa-comment"></i>
+              </button>
+              <button onclick="addToCart(${p.id})" class="px-3 py-1.5 bg-emerald-600 hover:bg-emerald-700 text-white rounded-xl text-xs font-bold">
+                + Add
+              </button>
+            </div>
+          </div>
+        </div>
+      `).join('');
+    }
+
+    function filterProducts() {
+      const q = document.getElementById('buyerSearchInput').value;
+      renderProducts(q);
+    }
+
+    function renderFarmerListings() {
+      const container = document.getElementById('farmerListingsGrid');
+      container.innerHTML = productsData.map(p => `
+        <div class="p-4 bg-slate-50 rounded-2xl border border-slate-200 flex items-center gap-3">
+          <div class="text-4xl">${p.emoji}</div>
+          <div class="flex-1">
+            <h5 class="font-bold text-xs text-slate-900">${p.name}</h5>
+            <span class="font-black text-emerald-800 text-xs">₹${p.price} / ${p.unit}</span>
+            <div class="text-[10px] text-emerald-600 font-semibold mt-0.5">● 100% Payout Guaranteed</div>
+          </div>
+        </div>
+      `).join('');
+    }
+
+    // 5. Cart Operations
+    function addToCart(id) {
+      const p = productsData.find(item => item.id === id);
+      cart.push(p);
+      document.getElementById('cartCountBadge').innerText = cart.length;
+      alert(`✅ ${p.name} added to cart!`);
+    }
+
+    function openCartDrawer() {
+      document.getElementById('cartDrawer').classList.remove('hide');
+      const list = document.getElementById('cartItemsList');
+      if (cart.length === 0) {
+        list.innerHTML = '<p class="text-slate-400 text-center py-8">टोकरी खाली है। ताज़ा उत्पाद जोड़ें!</p>';
+        document.getElementById('cartTotalText').innerText = '₹0';
+        return;
+      }
+      let total = 0;
+      list.innerHTML = cart.map((p, idx) => {
+        total += p.price;
+        return `
+          <div class="flex items-center justify-between p-2.5 bg-slate-50 rounded-xl border border-slate-200">
+            <div class="flex items-center gap-2">
+              <span class="text-2xl">${p.emoji}</span>
+              <div>
+                <b class="text-slate-900">${p.name}</b>
+                <div class="text-slate-500 font-medium">₹${p.price}</div>
+              </div>
+            </div>
+            <button onclick="cart.splice(${idx},1);openCartDrawer();document.getElementById('cartCountBadge').innerText = cart.length;" class="text-rose-500 font-bold">✕</button>
+          </div>
+        `;
+      }).join('');
+      document.getElementById('cartTotalText').innerText = '₹' + (total + 50);
+    }
+
+    function closeCartDrawer() {
+      document.getElementById('cartDrawer').classList.add('hide');
+    }
+
+    function checkoutCart() {
+      if (cart.length === 0) return;
+      alert('🎉 बधाई! आपका ऑर्डर सीधे किसान को भेज दिया गया है!');
+      cart = [];
+      document.getElementById('cartCountBadge').innerText = 0;
+      closeCartDrawer();
+      openTrackingModal();
+    }
+
+    // 6. Direct Chat
+    function openChatModal(id) {
+      const p = productsData.find(item => item.id === id) || productsData[0];
+      document.getElementById('chatCropEmoji').innerText = p.emoji;
+      document.getElementById('chatFarmerName').innerText = p.farmer + ' (किसान)';
+      document.getElementById('chatModal').classList.remove('hide');
+    }
+
+    function closeChatModal() {
+      document.getElementById('chatModal').classList.add('hide');
+    }
+
+    function sendChatMessage(text) {
+      const msg = text || document.getElementById('chatInput').value.trim();
+      if (!msg) return;
+      const thread = document.getElementById('chatThread');
+      thread.innerHTML += `<div class="p-3 bg-emerald-600 text-white rounded-2xl max-w-[85%] ml-auto"><b>आप:</b> ${msg}</div>`;
+      if (!text) document.getElementById('chatInput').value = '';
+      setTimeout(() => {
+        thread.innerHTML += `<div class="p-3 bg-white border border-slate-200 rounded-2xl max-w-[85%] text-slate-800"><b>किसान:</b> जी बिल्कुल, यह सुबह का ताज़ा माल है। आप निश्चिंत होकर ऑर्डर करें।</div>`;
+        thread.scrollTop = thread.scrollHeight;
+      }, 1000);
+    }
+
+    // 7. Tracking Modal
+    function openTrackingModal() {
+      document.getElementById('trackingModal').classList.remove('hide');
+    }
+
+    function closeTrackingModal() {
+      document.getElementById('trackingModal').classList.add('hide');
+    }
+
+    // 8. Add Crop Modal
+    function openAddCropModal() {
+      document.getElementById('addCropModal').classList.remove('hide');
+    }
+
+    function closeAddCropModal() {
+      document.getElementById('addCropModal').classList.add('hide');
+    }
+
+    function saveNewCrop() {
+      const name = document.getElementById('newCropName').value.trim();
+      const price = parseInt(document.getElementById('newCropPrice').value);
+      const unit = document.getElementById('newCropUnit').value;
+      if (!name || !price) {
+        alert('Please fill crop name and price');
+        return;
+      }
+      productsData.unshift({
+        id: Date.now(),
+        name,
+        desc: 'सीधे खेत से ताज़ा फसल',
+        price,
+        unit,
+        emoji: '🌾',
+        farmer: currentUser,
+        location: 'Local Farm',
+        tag: 'New Harvest'
+      });
+      renderProducts();
+      renderFarmerListings();
+      closeAddCropModal();
+      alert('✅ फसल सफलतापूर्वक डिजिटल मंडी में लिस्ट हो गई है!');
+    }
+  </script>
+</body>
+</html>

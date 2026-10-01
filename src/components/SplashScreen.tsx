@@ -11,26 +11,46 @@ interface SplashScreenProps {
 export const SplashScreen: React.FC<SplashScreenProps> = ({ onComplete, currentLang }) => {
   const [progress, setProgress] = useState(0);
   const t = UI_TRANSLATIONS[currentLang];
+  const onCompleteRef = React.useRef(onComplete);
+  onCompleteRef.current = onComplete;
 
   useEffect(() => {
+    let completed = false;
+    const triggerComplete = () => {
+      if (!completed) {
+        completed = true;
+        onCompleteRef.current();
+      }
+    };
+
     const interval = setInterval(() => {
       setProgress((prev) => {
         if (prev >= 100) {
           clearInterval(interval);
-          setTimeout(() => {
-            onComplete();
-          }, 350);
+          setTimeout(triggerComplete, 200);
           return 100;
         }
-        return prev + 4;
+        return prev + 5;
       });
-    }, 60);
+    }, 45);
 
-    return () => clearInterval(interval);
-  }, [onComplete]);
+    // Guaranteed fallback timeout so splash screen NEVER gets stuck
+    const safetyTimer = setTimeout(() => {
+      clearInterval(interval);
+      triggerComplete();
+    }, 1800);
+
+    return () => {
+      clearInterval(interval);
+      clearTimeout(safetyTimer);
+    };
+  }, []);
 
   return (
-    <div className="fixed inset-0 z-50 flex flex-col items-center justify-center bg-gradient-to-br from-emerald-950 via-emerald-900 to-green-950 text-white overflow-hidden p-6 select-none">
+    <div 
+      onClick={() => onCompleteRef.current()}
+      className="fixed inset-0 z-50 flex flex-col items-center justify-center bg-gradient-to-br from-emerald-950 via-emerald-900 to-green-950 text-white overflow-hidden p-6 select-none cursor-pointer"
+    >
       {/* Decorative ambient background glows */}
       <div className="absolute top-1/4 left-1/4 w-96 h-96 bg-emerald-500/15 rounded-full blur-3xl pointer-events-none animate-pulse" />
       <div className="absolute bottom-1/4 right-1/4 w-96 h-96 bg-amber-500/10 rounded-full blur-3xl pointer-events-none" />
